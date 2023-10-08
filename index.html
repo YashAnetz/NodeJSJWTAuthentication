@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NodeJS JWT Authentication Test</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500&display=swap');
+
+      .body {
+        background-color: #1E2C40;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+
+      
+     
+     
+      }
+    
+      .container-fluid {
+        max-width: 600px;
+        margin:10%;
+        padding: 40px;
+      
+        color: white;
+       
+        background-color: #2D4059;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+      }
+    
+      h1.row {
+        text-align: center;
+        margin-bottom: 20px;
+        margin-left: 10px;
+        color:#FFD460;
+        width: 200px;
+        padding: 10px;
+    ;
+        border-radius: 10px;
+       
+      }
+    
+      .row {
+        margin-bottom: 10px;
+      
+
+      }
+    
+      .back
+      {
+        opacity: 0;
+      }
+    
+    
+      input[type="text"],
+      input[type="password"] {
+        width: 80%;
+        padding: 10px;
+        margin-bottom: 10px;
+        margin-left: 10%;
+        border: none;
+        border-radius: 10px;
+        color: #FFD460;
+        font-size: 16px;
+        background-color: #1E2C40;
+      }
+    
+      hr {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 20px 0;
+      }
+    
+      .btn {
+        margin-right: 10px;
+      }
+    
+      main {
+        text-align: center;
+      }
+
+      .button
+      {
+        border: none;
+        border-radius: 10px;
+        color: #1E2C40;
+        width:100px;
+        background-color: #FFD460;
+        margin: 5px;
+        height: 40px;
+      }
+
+      .button:hover
+      {
+        background-color: #2D4059;
+        color: #FFD460;
+        border: 2px #FFD460 solid;
+      }
+    </style>
+    
+    <!-- Latest compiled and minified CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"
+      integrity="sha512-emSwuKiMyYedRwflbZB2ghzX8Cw8fmNVgZ6yQNNXXagFzFOaQmbvQ1vmDkddHjm5AITcBIZfC7k4ShQSjgPAmQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+  <body class="body">
+    <div class="container-fluid">
+      <h1 class="row">Login</h1>
+      <button class="back">Back</button>
+
+
+      <main>
+        <div class="row">
+          
+          <input type="text" name="username" placeholder="Username" id="username" />
+        </div>
+        <div class="row">
+         
+          <input type="password" name="password" placeholder="Password" id="password" />
+        </div>
+        <hr style="width: 600px; margin-left: -12px;">
+        <div>
+          <button class="button" onclick="login()">Login</button>
+          <button class="button" onclick="getDashboard()">
+            Dashboard
+          </button>
+          <button class="button" onclick="getSettings()">
+            Settings
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      function login() {
+        const data = {
+          username: document.getElementById("username").value,
+          password: document.getElementById("password").value,
+        };
+        axios.post("/api/login", data).then((res) => {
+          console.log(res);
+          document.getElementById("username").value = "";
+          document.getElementById("password").value = "";
+          if (res && res.data && res.data.success) {
+            token = res.data.token;
+            localStorage.setItem("jwt", token);
+            getDashboard();
+          }
+        });
+      }
+
+      function getDashboard() {
+        const token = localStorage.getItem("jwt");
+        axios
+          .get("/api/dashboard", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+          .then((res) => {
+            document.querySelector("h1.row").innerHTML = "Dashboard";
+            document.querySelector("main").innerHTML = res.data.myContent;
+          
+            history.pushState({}, null, "/dashboard");
+          })
+          .catch((err) => {
+            if (err.response && err.response.status === 401) {
+              localStorage.removeItem("jwt");
+              window.location.href = "/";
+            }
+          });
+      }
+
+      function getSettings() {
+        const token = localStorage.getItem("jwt");
+        axios
+          .get("/api/settings", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+          .then((res) => {
+            document.querySelector("h1.row").innerHTML = "Settings";
+            document.querySelector("main").innerHTML = res.data.myContent;
+     
+
+            history.pushState({}, null, "/settings");
+          })
+          .catch((err) => {
+            if (err.response && err.response.status === 401) {
+              localStorage.removeItem("jwt");
+              window.location.href = "/";
+            }
+          });
+      }
+
+      
+
+      function onLoad() {
+        const token = localStorage.getItem("jwt");
+        if (token) {
+          getDashboard();
+        
+        }
+      }
+    
+    </script>
+  </body>
+</html>
