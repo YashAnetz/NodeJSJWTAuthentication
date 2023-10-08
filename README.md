@@ -3,6 +3,9 @@
 # Yash Ahire
 
 
+Note : onLoad() has been commented to access the settings. 
+Uncomment onLoad() for keeping session active
+
 
 
 
